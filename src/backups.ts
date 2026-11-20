@@ -52,6 +52,9 @@ const called = async <T,>(command: string, args: Record<string, unknown>): Promi
 const views = async (command: string, args: Record<string, unknown>): Promise<Result<readonly BackupView[]>> =>
   ((result) => (result.ok ? { ok: true as const, value: result.value.map(viewOf) } : result))(await called<readonly Received[]>(command, args))
 
+/** Whether this computer has a usual place for backups, as Finder, iTunes and Apple Devices do: none on Linux. */
+export const hasUsualPlace = (): Promise<boolean> => invoke<boolean>("has_usual_place")
+
 /** The backups where Finder, iTunes and Apple Devices keep them, newest first. */
 export const findBackups = (): Promise<Result<readonly BackupView[]>> => views("find_backups", {})
 

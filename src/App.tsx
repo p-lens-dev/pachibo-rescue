@@ -1,10 +1,14 @@
 import { open, save } from "@tauri-apps/plugin-dialog"
 import { createSignal, For, Match, onMount, Show, Switch, type JSX } from "solid-js"
 
-import { backupsInFolder, findBackups, rescue, type BackupView, type Problem, type Result } from "./backups"
+import { backupsInFolder, findBackups, hasUsualPlace, rescue, type BackupView, type Problem, type Result } from "./backups"
 import { deviceText, iosText, madeAtText, needsFullDiskAccess, problemText } from "./wording"
 
+/** Where the list was last read from: the usual place, a folder the person chose, or nowhere yet where there is no usual place. */
+type Place = { readonly type: "usual" } | { readonly type: "folder"; readonly path: string } | { readonly type: "unchosen" }
+
 type Listing =
+  | { readonly type: "unchosen" }
   | { readonly type: "looking" }
   | { readonly type: "listed"; readonly backups: readonly BackupView[] }
   | { readonly type: "failed"; readonly problem: Problem }
@@ -43,20 +47,24 @@ const FullDiskAccess = (): JSX.Element => (
 )
 
 export const App = (): JSX.Element => {
+  const [place, setPlace] = createSignal<Place>({ type: "usual" })
   const [listing, setListing] = createSignal<Listing>({ type: "looking" })
   const [rescueState, setRescue] = createSignal<Rescue>({ type: "idle" })
   const [passwords, setPasswords] = createSignal<ReadonlyMap<string, string>>(new Map())
 
-  const look = async (): Promise<void> => {
+  const lookAt = async (at: Place): Promise<void> => {
+    setPlace(at)
+    if (at.type === "unchosen") {
+      setListing({ type: "unchosen" })
+      return
+    }
     setListing({ type: "looking" })
-    setListing(listingOf(await findBackups()))
+    setListing(listingOf(await (at.type === "usual" ? findBackups() : backupsInFolder(at.path))))
   }
 
   const lookInFolder = async (): Promise<void> => {
     const folder = chosenPath(await open({ directory: true, title: "バックアップのフォルダを選ぶ" }))
-    if (folder === undefined) return
-    setListing({ type: "looking" })
-    setListing(listingOf(await backupsInFolder(folder)))
+    if (folder !== undefined) await lookAt({ type: "folder", path: folder })
   }
 
   const setPassword = (path: string, password: string): void => {
@@ -73,7 +81,7 @@ export const App = (): JSX.Element => {
 
   const rescueOf = (path: string): Rescue => ((state) => (state.type !== "idle" && state.path === path ? state : { type: "idle" }))(rescueState())
 
-  onMount(() => void look())
+  onMount(() => void hasUsualPlace().then((usual) => lookAt(usual ? { type: "usual" } : { type: "unchosen" })))
 
   return (
     <main>
@@ -82,15 +90,20 @@ export const App = (): JSX.Element => {
         <header class="row">
           <h2>バックアップ</h2>
           <span class="actions">
-            <button type="button" onClick={() => void look()}>
-              探し直す
-            </button>
+            <Show when={place().type !== "unchosen"}>
+              <button type="button" onClick={() => void lookAt(place())}>
+                一覧を更新
+              </button>
+            </Show>
             <button type="button" onClick={() => void lookInFolder()}>
               フォルダを選ぶ
             </button>
           </span>
         </header>
         <Switch>
+          <Match when={listing().type === "unchosen"}>
+            <p class="quiet">「フォルダを選ぶ」で、バックアップのあるフォルダを選んでください。</p>
+          </Match>
           <Match when={listing().type === "looking"}>
             <p class="quiet">探しています…</p>
           </Match>
@@ -106,7 +119,7 @@ export const App = (): JSX.Element => {
           </Match>
           <Match when={((state) => (state.type === "listed" ? state : undefined))(listing())}>
             {(listed) => (
-              <Show when={listed().backups.length > 0} fallback={<p class="quiet">バックアップが見つかりません。iPhone のバックアップを作ってから「探し直す」を押すか、「フォルダを選ぶ」でバックアップのあるフォルダを選んでください。</p>}>
+              <Show when={listed().backups.length > 0} fallback={<p class="quiet">バックアップが見つかりません。iPhone のバックアップを作ってから「一覧を更新」を押すか、「フォルダを選ぶ」でバックアップのあるフォルダを選んでください。</p>}>
                 <ul class="list">
                   <For each={listed().backups}>
                     {(backup) => (

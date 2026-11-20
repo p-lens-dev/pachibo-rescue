@@ -98,6 +98,12 @@ fn find_backups() -> Result<Vec<BackupView>, Problem> {
     views_in(&discovery::default_roots())
 }
 
+/// Whether this computer has a usual place for backups: none on Linux.
+#[tauri::command]
+fn has_usual_place() -> bool {
+    !discovery::default_roots().is_empty()
+}
+
 /// The backups in a folder the person chose, newest first.
 #[tauri::command]
 fn backups_in_folder(path: String) -> Result<Vec<BackupView>, Problem> {
@@ -122,7 +128,7 @@ async fn rescue(path: String, password: Option<String>, out: String) -> Result<u
 fn main() {
     let ran = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![find_backups, backups_in_folder, rescue])
+        .invoke_handler(tauri::generate_handler![has_usual_place, find_backups, backups_in_folder, rescue])
         .run(tauri::generate_context!());
     if let Err(error) = ran {
         eprintln!("pachibo-rescue could not start: {error}");
