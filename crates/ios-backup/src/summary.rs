@@ -51,8 +51,7 @@ pub fn summarize(path: &Path) -> Result<Summary, BackupError> {
     let mut apps: Vec<String> = manifest
         .get("Applications")
         .and_then(Value::as_dictionary)
-        .map(|applications| applications.keys().cloned().collect())
-        .unwrap_or_default();
+        .map_or_else(Vec::new, |applications| applications.keys().cloned().collect());
     apps.sort();
     Ok(Summary {
         path: path.to_owned(),
