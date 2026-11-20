@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/ios-backup", "crates/pachibo"]
+members = ["crates/ios-backup", "crates/pachibo", "src-tauri"]
 
 [workspace.package]
 edition = "2024"

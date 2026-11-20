@@ -1,35 +1,62 @@
 # pachibo-rescue
 
-A desktop app for Windows, macOS and Linux that takes the records of ぱち簿, an
-iPhone app for pachinko and pachislot results no longer updated, out of an
-iPhone backup, and writes them in a form P-Lens takes in.
+> **The Japanese text is the original.** [README.ja.md](README.ja.md) is the original; this English text is a translation, and where the two differ the Japanese holds.
 
-It reads a backup made by Finder (macOS), Apple Devices or iTunes (Windows), or
-`idevicebackup2` (Linux). It never talks to the phone and sends nothing anywhere.
+A desktop app that takes the records of ぱち簿 — an iPhone app for pachinko
+and pachislot results, not updated since 2020 — out of an iPhone backup, and
+saves them as ぱち簿's own export (`.pcb`), which P-Lens takes in at
+設定 → インポート → ぱち簿.
 
-## Status
+- It reads only the iPhone backups on the computer; it never talks to the phone.
+- It sends nothing anywhere.
+- It runs on Windows, macOS and Linux.
+
+## Using it
+
+1. Connect the iPhone and make a backup: Finder on a Mac, Apple Devices (or
+   iTunes) on Windows, `idevicebackup2 backup --full <folder>` on Linux.
+2. Open pachibo-rescue: it lists the backups. On Linux, choose the backup's
+   folder with フォルダを選ぶ.
+3. Press 取り出す and choose where to save. For an encrypted backup, type its
+   password first.
+
+## Opening it the first time
+
+The app is not signed by Apple or Microsoft.
+
+- **macOS**: when it is stopped, press "Open Anyway" under System Settings →
+  Privacy & Security. If it says the app is damaged, run
+  `xattr -cr /Applications/pachibo-rescue.app` and open it again.
+- **macOS, Full Disk Access**: to read the backup folder, turn pachibo-rescue
+  on under System Settings → Privacy & Security → Full Disk Access, then
+  reopen the app.
+- **Windows**: at "Windows protected your PC", press "More info" → "Run anyway".
+- **Linux**: make the AppImage executable (`chmod +x pachibo-rescue_*.AppImage`).
+
+## Developing
+
+```sh
+bun install
+bun run dev                       # Tauri in development
+bun run check                     # tsc
+cargo clippy --workspace --all-targets -- -D warnings
+cargo test --workspace
+```
 
 - `crates/ios-backup`: finding backups, reading what they say of themselves,
   unlocking encrypted ones with their password, and taking one app's files out.
-- `crates/pachibo`: ぱち簿's `Documents/data.plist` written as its own `.pcb`
-  export, which P-Lens takes in (設定 → インポート → ぱち簿).
-- The desktop shell (Tauri) is still to come.
+- `crates/pachibo`: ぱち簿's `Documents/data.plist` written as a `.pcb`.
+- `src-tauri`, `src`: the desktop app (Tauri 2 and Solid).
 
-## Rescuing by hand
-
-```sh
-cargo run -p pachibo --example rescue -- <backup folder> pachibo.pcb
-```
-
-## Looking into a backup by hand
+By hand (`BACKUP_PASSWORD` for an encrypted backup):
 
 ```sh
 cargo run -p ios-backup --example inspect -- <backup folder>
-cargo run -p ios-backup --example inspect -- <backup folder> AppDomain-<bundle id>
-cargo run -p ios-backup --example inspect -- <backup folder> AppDomain-<bundle id> <out folder>
+cargo run -p pachibo --example rescue -- <backup folder> pachibo.pcb
 ```
 
-Set `BACKUP_PASSWORD` for an encrypted backup.
+Pushing a `v*` tag has GitHub Actions build the macOS (universal), Windows and
+Linux apps into a draft Release.
 
 ## Licence
 

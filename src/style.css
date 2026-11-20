@@ -1,0 +1,168 @@
+:root {
+  --background: #f7f8fa;
+  --surface: #ffffff;
+  --text: #1b1f24;
+  --quiet: #5c6570;
+  --line: #d9dee4;
+  --accent: #1d3f6e;
+  --accent-text: #ffffff;
+  --danger: #c4373c;
+  --done: #1f7a4d;
+  --notice: #fff6e0;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #15181c;
+    --surface: #1e2228;
+    --text: #e8ebef;
+    --quiet: #9aa4af;
+    --line: #333a43;
+    --accent: #5b8fd6;
+    --accent-text: #0d1117;
+    --danger: #ff7b7f;
+    --done: #5cc993;
+    --notice: #3a3020;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", "Noto Sans JP", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+h1 {
+  font-size: 1.4rem;
+  margin: 0 0 8px;
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+ol {
+  padding-left: 1.4em;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0;
+  display: grid;
+  gap: 8px;
+}
+
+.backup {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.device {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.device strong {
+  overflow-wrap: anywhere;
+}
+
+.password {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+input {
+  font: inherit;
+  color: inherit;
+  background: var(--background);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+button {
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.quiet {
+  color: var(--quiet);
+  font-size: 0.9rem;
+  margin: 4px 0 0;
+}
+
+.problem {
+  color: var(--danger);
+  margin: 8px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.done {
+  color: var(--done);
+  margin: 8px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.notice {
+  background: var(--notice);
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.backups {
+  margin-top: 24px;
+}

@@ -1,0 +1,19 @@
+[package]
+name = "pachibo-rescue"
+description = "ぱち簿's records taken out of an iPhone backup, for P-Lens"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+ios-backup = { path = "../crates/ios-backup" }
+pachibo = { path = "../crates/pachibo" }
+serde = { version = "1", features = ["derive"] }
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+
+[lints]
+workspace = true
