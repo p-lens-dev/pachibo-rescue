@@ -9,14 +9,15 @@ saves them as ぱち簿's own export (`.pcb`), which P-Lens takes in at
 
 - It reads only the iPhone backups on the computer; it never talks to the phone.
 - It sends nothing anywhere.
-- It runs on Windows, macOS and Linux.
+- It is released for Windows and macOS; downloads and full instructions are under Releases.
 
 ## Using it
 
+Do not delete ぱち簿 from the iPhone: deleting it deletes its records from the phone, and no backup holds them after.
+
 1. Connect the iPhone and make a backup: Finder on a Mac, Apple Devices (or
-   iTunes) on Windows, `idevicebackup2 backup --full <folder>` on Linux.
-2. Open pachibo-rescue: it lists the backups. On Linux, choose the backup's
-   folder with フォルダを選ぶ.
+   iTunes) on Windows.
+2. Open pachibo-rescue: it lists the backups.
 3. Press 取り出す and choose where to save. For an encrypted backup, type its
    password first.
 
@@ -31,7 +32,6 @@ The app is not signed by Apple or Microsoft.
   on under System Settings → Privacy & Security → Full Disk Access, then
   reopen the app.
 - **Windows**: at "Windows protected your PC", press "More info" → "Run anyway".
-- **Linux**: make the AppImage executable (`chmod +x pachibo-rescue_*.AppImage`).
 
 ## Developing
 
@@ -48,6 +48,10 @@ cargo test --workspace
 - `crates/pachibo`: ぱち簿's `Documents/data.plist` written as a `.pcb`.
 - `src-tauri`, `src`: the desktop app (Tauri 2 and Solid).
 
+No Linux build is released, but `bunx tauri build --bundles appimage` makes
+one; make the backup with `idevicebackup2 backup --full <folder>`
+(libimobiledevice) and choose that folder with フォルダを選ぶ.
+
 By hand (`BACKUP_PASSWORD` for an encrypted backup):
 
 ```sh
@@ -55,8 +59,8 @@ cargo run -p ios-backup --example inspect -- <backup folder>
 cargo run -p pachibo --example rescue -- <backup folder> pachibo.pcb
 ```
 
-Pushing a `v*` tag has GitHub Actions build the macOS (universal), Windows and
-Linux apps into a draft Release.
+Pushing a `v*` tag has GitHub Actions build the macOS (universal) and Windows
+apps into a draft Release, with the instructions in `.github/release-notes.md`.
 
 ## Licence
 
