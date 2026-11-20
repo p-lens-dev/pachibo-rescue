@@ -11,7 +11,15 @@ It reads a backup made by Finder (macOS), Apple Devices or iTunes (Windows), or
 
 - `crates/ios-backup`: finding backups, reading what they say of themselves,
   unlocking encrypted ones with their password, and taking one app's files out.
-- The desktop shell (Tauri) and the conversion to P-Lens's import are still to come.
+- `crates/pachibo`: ぱち簿's `Documents/data.plist` written as its own `.pcb`
+  export, which P-Lens takes in (設定 → インポート → ぱち簿).
+- The desktop shell (Tauri) is still to come.
+
+## Rescuing by hand
+
+```sh
+cargo run -p pachibo --example rescue -- <backup folder> pachibo.pcb
+```
 
 ## Looking into a backup by hand
 

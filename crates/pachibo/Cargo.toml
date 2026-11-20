@@ -1,0 +1,16 @@
+[package]
+name = "pachibo"
+description = "ぱち簿's records taken out of an iPhone backup and written as its own .pcb file, which P-Lens takes in"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+ios-backup = { path = "../ios-backup" }
+plist = "1.7"
+
+[dev-dependencies]
+tempfile = "3"
+
+[lints]
+workspace = true
