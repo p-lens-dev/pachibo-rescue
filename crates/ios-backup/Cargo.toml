@@ -1,0 +1,22 @@
+[package]
+name = "ios-backup"
+description = "Reading an iPhone backup made by Finder, iTunes or Apple Devices: finding it, unlocking it, and taking an app's files out"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[dependencies]
+aes = "0.8"
+aes-kw = { version = "0.2", features = ["alloc"] }
+cbc = { version = "0.1", features = ["alloc"] }
+pbkdf2 = { version = "0.12", default-features = false, features = ["hmac"] }
+plist = "1.7"
+rusqlite = { version = "0.37", features = ["bundled"] }
+sha1 = "0.10"
+sha2 = "0.10"
+tempfile = "3"
+
+[dev-dependencies]
+
+[lints]
+workspace = true
