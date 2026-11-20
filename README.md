@@ -1,8 +1,8 @@
-# p-lens-rescue
+# pachibo-rescue
 
-A desktop app for Windows, macOS and Linux that takes the records of an iPhone
-pachinko and pachislot app out of an iPhone backup, for apps that can no longer
-export them themselves, and writes them in a form P-Lens takes in.
+A desktop app for Windows, macOS and Linux that takes the records of ぱち簿, an
+iPhone app for pachinko and pachislot results no longer updated, out of an
+iPhone backup, and writes them in a form P-Lens takes in.
 
 It reads a backup made by Finder (macOS), Apple Devices or iTunes (Windows), or
 `idevicebackup2` (Linux). It never talks to the phone and sends nothing anywhere.
