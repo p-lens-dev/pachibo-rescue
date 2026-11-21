@@ -276,6 +276,9 @@ pub struct PhoneView {
     model: String,
     has_pachibo: bool,
     awake: bool,
+    /// Whether the phone is in airplane mode, as a read is best done: ぱち簿
+    /// then loads no ads while it is driven (adb over USB needs no network).
+    airplane: bool,
 }
 
 /// What adb sees, for the screen to guide the person.
@@ -332,7 +335,9 @@ pub fn android_phones(app: AppHandle) -> Phones {
             let has_pachibo = run(&program, &["-s", &serial, "shell", "pm", "path", pachibo_android::PACKAGE])
                 .is_some_and(|output| output.status.success() && output.stdout.starts_with(b"package:"));
             let awake = screen_on(&program, &serial);
-            Phones::Ready { phone: PhoneView { serial, model, has_pachibo, awake } }
+            let airplane = run(&program, &["-s", &serial, "shell", "settings", "get", "global", "airplane_mode_on"])
+                .is_some_and(|output| output.status.success() && String::from_utf8_lossy(&output.stdout).trim() == "1");
+            Phones::Ready { phone: PhoneView { serial, model, has_pachibo, awake, airplane } }
         }
     }
 }

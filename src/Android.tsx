@@ -44,13 +44,15 @@ const WindowsDriver = (): JSX.Element => (
 const Steps = (): JSX.Element => (
   <section class="intro">
     <h1>Android のぱち簿のデータを取り出す</h1>
-    <p>スマホの画面を読み取って、ぱち簿の収支を取り出し、P-Lens の「設定 → インポート → 汎用形式」で読み込める CSV にします。スマホやどこにもデータを送りません。課金やアプリの書き出しは要りません。</p>
+    <p>スマホの画面に表示される、あなた自身のぱち簿の収支を順に読み取り、P-Lens の「設定 → インポート → 汎用形式」で読み込める CSV にします。ぱち簿やそのデータを書き換えることはなく、データをどこにも送りません。</p>
     <ol>
       <li>スマホで「USB デバッグ」をオンにします（設定 → システム →「開発者向けオプション」。無ければ「端末情報」の「ビルド番号」を 7 回タップして出します）。</li>
       <li>スマホをこのパソコンに USB でつなぎ、スマホに出る「USB デバッグを許可しますか？」で「許可」を押します。{onWindows ? "（Windows では、スマホのメーカーの USB ドライバが要ることがあります。）" : ""}</li>
+      <li>スマホを機内モードにします（取り出しの間、ぱち簿が広告を読み込まないようにするためです。USB での取り出しに通信は要りません）。</li>
       <li>スマホの画面をつけたまま（ロックを解除したまま）にします。</li>
       <li>下の「スマホを確認」を押し、ぱち簿の入ったスマホが出たら「取り出す」を押します。取り出しの間はスマホを触らずに待ちます（画面が自動で動きます）。</li>
     </ol>
+    <p class="quiet">pachibo-rescue は非公式のツールです。ぱち簿の開発者とは関係ありません。</p>
   </section>
 )
 
@@ -212,6 +214,7 @@ export const Android = (): JSX.Element => {
                       <span class="quiet">
                         {phone().hasPachibo ? "ぱち簿あり" : "ぱち簿が見つかりません"}
                         {phone().awake ? "" : "・画面がついていません"}
+                        {phone().airplane ? "" : "・機内モードではありません"}
                       </span>
                     </span>
                     <button type="button" class="primary" disabled={!phoneReady(phones() as Phones) || busy()} onClick={() => void rescueFrom(phone().serial)}>

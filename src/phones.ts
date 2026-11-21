@@ -8,6 +8,8 @@ export type PhoneView = {
   readonly model: string
   readonly hasPachibo: boolean
   readonly awake: boolean
+  /** In airplane mode, so ぱち簿 loads no ads while it is driven. */
+  readonly airplane: boolean
 }
 
 /** What adb sees, for the screen to guide the person to a ready phone. */
