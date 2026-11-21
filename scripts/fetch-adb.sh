@@ -27,8 +27,8 @@ out="$root/src-tauri/binaries"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-echo "Fetching $zip…"
-curl -fsSL -o "$work/pt.zip" "https://dl.google.com/android/repository/$zip"
+echo "Fetching ${zip}..."
+curl -fsSL -o "${work}/pt.zip" "https://dl.google.com/android/repository/${zip}"
 if command -v unzip >/dev/null 2>&1; then
   unzip -q "$work/pt.zip" -d "$work"
 else
@@ -45,5 +45,5 @@ else
   chmod +x "$out/adb"
 fi
 
-echo "Staged adb for $os in $out:"
+echo "Staged adb for ${os} in ${out}:"
 ls -l "$out"
