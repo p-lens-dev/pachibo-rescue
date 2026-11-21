@@ -169,7 +169,7 @@ impl Dumper {
 
     /// What it has said on standard error lately, on one line.
     pub(crate) fn said(&self) -> String {
-        self.said.lock().map(|said| said.split_whitespace().collect::<Vec<_>>().join(" ")).unwrap_or_default()
+        self.said.lock().map_or_else(|_| String::new(), |said| said.split_whitespace().collect::<Vec<_>>().join(" "))
     }
 
     /// Give the view with input focus `text`, as accessibility sets it (past

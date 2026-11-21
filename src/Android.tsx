@@ -2,7 +2,7 @@ import { save } from "@tauri-apps/plugin-dialog"
 import { listen } from "@tauri-apps/api/event"
 import { createSignal, Match, onCleanup, onMount, Show, Switch, type JSX } from "solid-js"
 
-import { androidCancel, androidPhones, androidRescue, androidSurvey, onProgress, onWaiting, type Phones, type Progress, type Rescued, type Waiting } from "./android"
+import { androidCancel, androidPhones, androidRescue, androidSurvey, onProgress, onWaiting, type Phones, type Progress, type Rescued, type Waiting } from "./phones"
 import { problemOf, type Problem } from "./backups"
 import { problemText } from "./wording"
 

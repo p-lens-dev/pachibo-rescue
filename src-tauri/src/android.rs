@@ -297,8 +297,7 @@ pub enum Phones {
 fn prop(program: &str, serial: &str, name: &str) -> String {
     run(program, &["-s", serial, "shell", "getprop", name])
         .filter(|output| output.status.success())
-        .map(|output| String::from_utf8_lossy(&output.stdout).trim().to_owned())
-        .unwrap_or_default()
+        .map_or_else(String::new, |output| String::from_utf8_lossy(&output.stdout).trim().to_owned())
 }
 
 /// What adb sees now: for the screen to guide the person to a ready phone.

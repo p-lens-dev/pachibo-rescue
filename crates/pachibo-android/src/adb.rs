@@ -546,7 +546,7 @@ impl Adb {
                 Some(Err(Error::Step(format!("the screen could not be read: {why}"))))
             }
             Err(Fault::Broken(why)) => {
-                let said = self.helper.as_ref().map(Dumper::said).unwrap_or_default();
+                let said = self.helper.as_ref().map_or_else(String::new, Dumper::said);
                 self.helper = None;
                 self.helper_failure(&format!("the screen reader broke ({took:.2}s): {why} {said}"));
                 None
