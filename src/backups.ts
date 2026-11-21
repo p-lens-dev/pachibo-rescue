@@ -23,6 +23,46 @@ export type Problem =
   | { readonly type: "not-pachibo-data" }
   | { readonly type: "broken"; readonly detail: string }
   | { readonly type: "write-failed"; readonly path: string; readonly detail: string }
+  | { readonly type: "scrape-failed"; readonly detail: string; readonly log: string | null }
+  | { readonly type: "phone-lost"; readonly detail: string; readonly log: string | null }
+  | { readonly type: "adb-missing"; readonly detail: string }
+  | { readonly type: "busy" }
+  | { readonly type: "cancelled" }
+
+/** Every kind of problem the app's commands report, to tell one from anything else thrown. */
+const PROBLEM_TYPES: ReadonlySet<string> = new Set<Problem["type"]>([
+  "permission-denied",
+  "missing",
+  "unreadable",
+  "password-needed",
+  "wrong-password",
+  "not-in-backup",
+  "not-pachibo-data",
+  "broken",
+  "write-failed",
+  "scrape-failed",
+  "phone-lost",
+  "adb-missing",
+  "busy",
+  "cancelled",
+])
+
+/** Words for anything thrown, whatever it is. */
+const describe = (thrown: unknown): string => {
+  if (thrown instanceof Error) return thrown.message
+  if (typeof thrown === "string") return thrown
+  try {
+    return JSON.stringify(thrown) ?? String(thrown)
+  } catch {
+    return String(thrown)
+  }
+}
+
+/** Anything a command threw, as a problem: one the app reported as it is, anything else (a command missing, a bridge failure, a value not foreseen) as broken with its words, so nothing is shown blank. */
+export const problemOf = (thrown: unknown): Problem =>
+  typeof thrown === "object" && thrown !== null && "type" in thrown && typeof thrown.type === "string" && PROBLEM_TYPES.has(thrown.type)
+    ? (thrown as Problem)
+    : { type: "broken", detail: describe(thrown) }
 
 export type Result<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly problem: Problem }
 
@@ -41,11 +81,12 @@ const viewOf = (received: Received): BackupView => ({
   madeAt: received.madeAt ?? undefined,
 })
 
-const called = async <T,>(command: string, args: Record<string, unknown>): Promise<Result<T>> => {
+/** Run a command, its failure (whatever was thrown) as a problem rather than a throw. */
+export const called = async <T,>(command: string, args: Record<string, unknown> = {}): Promise<Result<T>> => {
   try {
     return { ok: true, value: await invoke<T>(command, args) }
-  } catch (problem) {
-    return { ok: false, problem: problem as Problem }
+  } catch (thrown) {
+    return { ok: false, problem: problemOf(thrown) }
   }
 }
 

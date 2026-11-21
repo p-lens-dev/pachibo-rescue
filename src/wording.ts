@@ -36,8 +36,26 @@ export const problemText = (problem: Problem): string => {
       return `バックアップを読めませんでした（${problem.detail}）`
     case "write-failed":
       return `書き出せませんでした: ${problem.path}（${problem.detail}）`
+    case "scrape-failed":
+      return `スマホからの取り出しに失敗しました（${problem.detail}）。スマホの画面をつけたまま、ぱち簿が開いていることを確かめて、もう一度お試しください。${logText(problem.log)}`
+    case "phone-lost":
+      return `スマホとの接続が切れました（${problem.detail}）。USB ケーブルがしっかりつながっているか、スマホに「USB デバッグを許可しますか？」が出ていないかを確かめて、もう一度お試しください。${logText(problem.log)}`
+    case "adb-missing":
+      return `スマホとやりとりする adb を動かせませんでした（${problem.detail}）。アプリを入れ直してください。`
+    case "busy":
+      return "スマホを読み取っている途中です。終わるまで（または中断するまで）お待ちください。"
+    case "cancelled":
+      return "中断しました。"
+    default:
+      return unforeseen(problem)
   }
 }
+
+/** Where a run's log was kept, for a problem's words: to send along when asking for help. */
+const logText = (log: string | null): string => (log === null ? "" : `（くわしい記録: ${log}）`)
+
+/** A problem of a kind the screen does not know: the types say there is none, but one from a newer or older app is still put in words. */
+const unforeseen = (problem: never): string => `思いがけない問題が起きました（${JSON.stringify(problem)}）。`
 
 /** Whether the problem is the Mac refusing the backup folder until the app has Full Disk Access. */
 export const needsFullDiskAccess = (problem: Problem): boolean => problem.type === "permission-denied"

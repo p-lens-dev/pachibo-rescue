@@ -1,0 +1,9 @@
+[package]
+name = "pachibo-android"
+description = "ぱち簿's records read off an Android phone over adb and written as a CSV that P-Lens takes in"
+edition.workspace = true
+license.workspace = true
+version.workspace = true
+
+[lints]
+workspace = true

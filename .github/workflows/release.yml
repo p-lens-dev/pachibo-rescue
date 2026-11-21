@@ -14,10 +14,12 @@ jobs:
       matrix:
         include:
           - platform: macos-latest
-            args: --target universal-apple-darwin
+            os: mac
+            args: --target universal-apple-darwin --config src-tauri/bundle-adb.json
             targets: aarch64-apple-darwin,x86_64-apple-darwin
           - platform: windows-latest
-            args: ""
+            os: windows
+            args: --config src-tauri/bundle-adb.json
             targets: ""
     runs-on: ${{ matrix.platform }}
     steps:
@@ -27,6 +29,9 @@ jobs:
         with:
           targets: ${{ matrix.targets }}
       - run: bun install --frozen-lockfile
+      - name: Bundle adb (Android Platform Tools)
+        shell: bash
+        run: bash scripts/fetch-adb.sh ${{ matrix.os }}
       - id: notes
         shell: bash
         run: |

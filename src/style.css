@@ -166,3 +166,72 @@ button:disabled {
 .backups {
   margin-top: 24px;
 }
+
+.tabs {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px 16px 0;
+  display: flex;
+  gap: 8px;
+}
+
+.tabs button {
+  flex: 1;
+  padding: 10px 12px;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px 8px 0 0;
+  border-bottom: none;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.tabs button.on {
+  background: var(--accent);
+  color: var(--accent-text);
+  border-color: var(--accent);
+}
+
+.tab > main {
+  padding-top: 8px;
+}
+
+.rescuing {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rescuing p {
+  margin: 0;
+}
+
+.rescuing button {
+  flex: none;
+  padding: 6px 14px;
+  background: var(--surface);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.rescuing button:disabled {
+  color: var(--quiet);
+  border-color: var(--line);
+  cursor: default;
+}
+
+.tab[hidden] {
+  display: none;
+}
+
+.done > p {
+  margin: 0 0 8px;
+}
+
+.done > p:last-child {
+  margin-bottom: 0;
+}

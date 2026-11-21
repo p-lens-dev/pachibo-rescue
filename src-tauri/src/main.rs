@@ -3,6 +3,8 @@
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod android;
+
 use std::path::{Path, PathBuf};
 
 use ios_backup::manifest::Backup;
@@ -37,6 +39,12 @@ enum Problem {
     NotPachiboData,
     Broken { detail: String },
     WriteFailed { path: String, detail: String },
+    ScrapeFailed { detail: String, log: Option<String> },
+    PhoneLost { detail: String, log: Option<String> },
+    AdbMissing { detail: String },
+    Busy,
+    /// The person stopped it before anything was read.
+    Cancelled,
 }
 
 fn shown(path: &Path) -> String {
@@ -128,10 +136,35 @@ async fn rescue(path: String, password: Option<String>, out: String) -> Result<u
 fn main() {
     let ran = tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![has_usual_place, find_backups, backups_in_folder, rescue])
-        .run(tauri::generate_context!());
-    if let Err(error) = ran {
-        eprintln!("pachibo-rescue could not start: {error}");
-        std::process::exit(1);
+        .setup(|app| {
+            android::log_panics(app.handle());
+            Ok(())
+        })
+        .manage(android::Cancel::default())
+        .manage(android::Driving::default())
+        .manage(android::BundledAdb::default())
+        .invoke_handler(tauri::generate_handler![has_usual_place, find_backups, backups_in_folder, rescue, android::android_phones, android::android_survey, android::android_rescue, android::android_cancel])
+        .build(tauri::generate_context!());
+    match ran {
+        Ok(app) => app.run(|app, event| match event {
+            // Closing while the phone is being read waits for the reading to
+            // stop, so the phone is left as it was found.
+            tauri::RunEvent::WindowEvent { event: tauri::WindowEvent::CloseRequested { api, .. }, .. } => {
+                if android::close_after_stopping(app) {
+                    api.prevent_close();
+                }
+            }
+            tauri::RunEvent::ExitRequested { api, .. } => {
+                if android::close_after_stopping(app) {
+                    api.prevent_exit();
+                }
+            }
+            tauri::RunEvent::Exit => android::stop_bundled_adb(app),
+            _ => {}
+        }),
+        Err(error) => {
+            eprintln!("pachibo-rescue could not start: {error}");
+            std::process::exit(1);
+        }
     }
 }

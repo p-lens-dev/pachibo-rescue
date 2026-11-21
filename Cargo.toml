@@ -1,11 +1,11 @@
 [workspace]
 resolver = "3"
-members = ["crates/ios-backup", "crates/pachibo", "src-tauri"]
+members = ["crates/ios-backup", "crates/pachibo", "crates/pachibo-android", "src-tauri"]
 
 [workspace.package]
 edition = "2024"
 license = "GPL-3.0-or-later"
-version = "0.1.0"
+version = "0.1.1"
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

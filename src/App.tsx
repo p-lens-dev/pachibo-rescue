@@ -1,8 +1,12 @@
 import { open, save } from "@tauri-apps/plugin-dialog"
 import { createSignal, For, Match, onMount, Show, Switch, type JSX } from "solid-js"
 
+import { Android } from "./Android"
 import { backupsInFolder, findBackups, hasUsualPlace, rescue, type BackupView, type Problem, type Result } from "./backups"
 import { deviceText, iosText, madeAtText, needsFullDiskAccess, problemText } from "./wording"
+
+/** Which phone the person is taking records off: an iPhone backup, or an Android phone over USB. */
+type Tab = "iphone" | "android"
 
 /** Where the list was last read from: the usual place, a folder the person chose, or nowhere yet where there is no usual place. */
 type Place = { readonly type: "usual" } | { readonly type: "folder"; readonly path: string } | { readonly type: "unchosen" }
@@ -46,7 +50,7 @@ const FullDiskAccess = (): JSX.Element => (
   </section>
 )
 
-export const App = (): JSX.Element => {
+const Iphone = (): JSX.Element => {
   const [place, setPlace] = createSignal<Place>({ type: "usual" })
   const [listing, setListing] = createSignal<Listing>({ type: "looking" })
   const [rescueState, setRescue] = createSignal<Rescue>({ type: "idle" })
@@ -172,5 +176,35 @@ export const App = (): JSX.Element => {
         </Switch>
       </section>
     </main>
+  )
+}
+
+/** Both tabs stay mounted once opened, only hidden when the other is shown, so a reading under way keeps its progress and its stop button across a switch. Android is mounted on its first opening, so adb is not started for a person who only uses iPhone. */
+export const App = (): JSX.Element => {
+  const [tab, setTab] = createSignal<Tab>("iphone")
+  const [androidOpened, setAndroidOpened] = createSignal(false)
+  const show = (to: Tab): void => {
+    if (to === "android") setAndroidOpened(true)
+    setTab(to)
+  }
+  return (
+    <>
+      <nav class="tabs">
+        <button type="button" classList={{ on: tab() === "iphone" }} onClick={() => show("iphone")}>
+          iPhone
+        </button>
+        <button type="button" classList={{ on: tab() === "android" }} onClick={() => show("android")}>
+          Android
+        </button>
+      </nav>
+      <div class="tab" hidden={tab() !== "iphone"}>
+        <Iphone />
+      </div>
+      <Show when={androidOpened()}>
+        <div class="tab" hidden={tab() !== "android"}>
+          <Android />
+        </div>
+      </Show>
+    </>
   )
 }

@@ -11,9 +11,15 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 ios-backup = { path = "../crates/ios-backup" }
 pachibo = { path = "../crates/pachibo" }
+pachibo-android = { path = "../crates/pachibo-android" }
 serde = { version = "1", features = ["derive"] }
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
+
+# Keeps the computer from sleeping while the phone is read (Windows:
+# SetThreadExecutionState; macOS: an IOKit power assertion).
+[target.'cfg(any(windows, target_os = "macos"))'.dependencies]
+keepawake = "0.6.1"
 
 [lints]
 workspace = true
