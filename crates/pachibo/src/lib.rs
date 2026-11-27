@@ -68,13 +68,31 @@ fn text_of(value: &Value) -> Option<String> {
     }
 }
 
-/// How many tallies a day keeps, where the key is a day's count (`item20261026_count`).
-fn day_count(key: &str, value: &str) -> Option<u64> {
+/// The day a day's count is kept for (`20261026` of `item20261026_count`); none where the key is no day's count.
+fn day_of(key: &str) -> Option<&str> {
     let digits = key.strip_prefix("item")?.strip_suffix("_count")?;
-    (digits.len() == 8 && digits.bytes().all(|byte| byte.is_ascii_digit())).then(|| value.parse().ok()).flatten()
+    (digits.len() == 8 && digits.bytes().all(|byte| byte.is_ascii_digit())).then_some(digits)
 }
 
-/// ぱち簿's `data.plist` as its `.pcb` file.
+/// How many tallies a day keeps, where the key is a day's count (`item20261026_count`).
+fn day_count(key: &str, value: &str) -> Option<u64> {
+    day_of(key).and_then(|_| value.parse().ok())
+}
+
+/// The sums of yen a tally keeps, savings and cash, in and back.
+const SUMS: [&str; 4] = ["invest", "invest2", "recovery", "recovery2"];
+
+/// The keys of the sums each tally keeps, by the days' counts: a day of two
+/// keeps `item20261026_0_invest`, …, `item20261026_1_recovery2`.
+fn sum_keys(days: &[(String, u64)]) -> Vec<String> {
+    days.iter()
+        .flat_map(|(day, count)| (0..*count).flat_map(move |index| SUMS.iter().map(move |sum| format!("item{day}_{index}_{sum}"))))
+        .collect()
+}
+
+/// ぱち簿's `data.plist` as its `.pcb` file. A sum ぱち簿 left blank —
+/// kept as an empty text, or not kept at all — is written as `0`, as
+/// ぱち簿 itself shows it, so that P-Lens takes the tally in.
 ///
 /// # Errors
 /// `NotPachiboData` where the bytes are no property list with a `user` dictionary.
@@ -85,16 +103,23 @@ pub fn rescue_data(data_plist: &[u8]) -> Result<Rescued, RescueError> {
         .and_then(|root| root.get("user"))
         .and_then(Value::as_dictionary)
         .ok_or_else(|| not_pachibo("no user dictionary"))?;
+    let values: Vec<(String, String, String)> = user
+        .iter()
+        .filter_map(|(typed_key, value)| {
+            let (key, kind) = typed_key.rsplit_once(':')?;
+            Some((kind.to_owned(), key.to_owned(), text_of(value)?))
+        })
+        .collect();
+    let days: Vec<(String, u64)> = values.iter().filter_map(|(_, key, value)| Some((day_of(key)?.to_owned(), day_count(key, value)?))).collect();
+    let sums = sum_keys(&days);
+    let blank = |key: &str, value: &str| value.trim().is_empty() && sums.iter().any(|sum| sum == key);
+    let kept = values.iter().filter(|(_, key, value)| !blank(key, value)).map(|(kind, key, value)| (kind.as_str(), key.as_str(), value.as_str()));
+    let filled = sums.iter().filter(|sum| !values.iter().any(|(_, key, value)| key == *sum && !blank(key, value))).map(|sum| ("Integer", sum.as_str(), "0"));
     let mut text = String::new();
-    let mut tallies = 0u64;
-    for (typed_key, value) in user {
-        let (Some((key, kind)), Some(value)) = (typed_key.rsplit_once(':'), text_of(value)) else {
-            continue;
-        };
-        tallies += day_count(key, &value).unwrap_or(0);
+    for (kind, key, value) in kept.chain(filled) {
         let _ = write!(text, "{kind},{key},{},{value},", value.chars().count());
     }
-    Ok(Rescued { pcb: text.into_bytes().into_iter().map(|byte| 255 - byte).collect(), tallies })
+    Ok(Rescued { pcb: text.into_bytes().into_iter().map(|byte| 255 - byte).collect(), tallies: days.iter().map(|(_, count)| count).sum() })
 }
 
 /// ぱち簿's records out of an opened backup, as its `.pcb` file.
@@ -143,7 +168,29 @@ mod tests {
         assert_eq!(rescued.tallies, 3);
         assert_eq!(
             turned_back(&rescued.pcb),
-            "Integer,item20261026_count,1,2,Integer,item20261028_count,1,1,String,item20261026_0_memo,7,めも,改行\nも,Boolean,graph,4,true,"
+            "Integer,item20261026_count,1,2,Integer,item20261028_count,1,1,String,item20261026_0_memo,7,めも,改行\nも,Boolean,graph,4,true,\
+             Integer,item20261026_0_invest,1,0,Integer,item20261026_0_invest2,1,0,Integer,item20261026_0_recovery,1,0,Integer,item20261026_0_recovery2,1,0,\
+             Integer,item20261026_1_invest,1,0,Integer,item20261026_1_invest2,1,0,Integer,item20261026_1_recovery,1,0,Integer,item20261026_1_recovery2,1,0,\
+             Integer,item20261028_0_invest,1,0,Integer,item20261028_0_invest2,1,0,Integer,item20261028_0_recovery,1,0,Integer,item20261028_0_recovery2,1,0,"
+        );
+    }
+
+    #[test]
+    fn writes_a_sum_left_blank_as_nothing() {
+        let rescued = rescue_data(&data_plist(&[
+            ("item20261106_count:Integer", "2"),
+            ("item20261106_0_invest:Integer", ""),
+            ("item20261106_0_invest2:Integer", "10000"),
+            ("item20261106_0_recovery2:Integer", "3000"),
+            ("item20261106_1_invest:Integer", "1000"),
+        ]))
+        .unwrap();
+        assert_eq!(rescued.tallies, 2);
+        assert_eq!(
+            turned_back(&rescued.pcb),
+            "Integer,item20261106_count,1,2,Integer,item20261106_0_invest2,5,10000,Integer,item20261106_0_recovery2,4,3000,Integer,item20261106_1_invest,4,1000,\
+             Integer,item20261106_0_invest,1,0,Integer,item20261106_0_recovery,1,0,\
+             Integer,item20261106_1_invest2,1,0,Integer,item20261106_1_recovery,1,0,Integer,item20261106_1_recovery2,1,0,"
         );
     }
 
