@@ -15,11 +15,11 @@ jobs:
         include:
           - platform: macos-latest
             os: mac
-            args: --target universal-apple-darwin --config src-tauri/bundle-adb.json
+            args: --target universal-apple-darwin --config src-tauri/bundle-adb.json --bundles dmg
             targets: aarch64-apple-darwin,x86_64-apple-darwin
           - platform: windows-latest
             os: windows
-            args: --config src-tauri/bundle-adb.json
+            args: --config src-tauri/bundle-adb.json --bundles nsis
             targets: ""
     runs-on: ${{ matrix.platform }}
     steps:
